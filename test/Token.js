@@ -3,7 +3,7 @@ var Token =  artifacts.require("./Token.sol");
 contract("Token", function(accounts) {
     var tokenInstance;
 
-    it("initializes the contracts with the correct inputs", function(){
+    it("initializes the contracts with the correct inputs", function(){//test to verify good inputs
         return Token.deployed().then(function(instance){
             tokenInstance = instance;
             return tokenInstance.name();
@@ -14,7 +14,7 @@ contract("Token", function(accounts) {
             assert.equal(symbol, "ARP", "check if token symbol is correct");
             return tokenInstance.decimals();
         }).then(function(decimals){
-            assert.equal(decimals.toNumber(), 21, "check if token decimals is correct")
+            assert.equal(decimals.toNumber(), 21, "check if token decimals number is correct")
         });
     });
 
@@ -31,18 +31,18 @@ contract("Token", function(accounts) {
     });
 
 
-    it("transfers token ownership", function() {
+    it("transfers token ownership", function() {//Transfer test
         return Token.deployed().then(function(instance) {
           tokenInstance = instance;
-          return tokenInstance.transfer.call(accounts[1], 99999999999999999999999);//doesn"t trigger transfer transaction with call, 
+          return tokenInstance.transfer.call(accounts[1], 999999999);//doesn"t trigger transfer transaction with call, 
                                                                                    //just to trigger return data
         }).then(assert.fail).catch(function(error) {
           assert(error.message.indexOf("revert") >= 0, "error message must contain revert");
-          return tokenInstance.transfer.call(accounts[1], 500000, { from: accounts[0] });//transfer test
+          return tokenInstance.transfer.call(accounts[1], 500000, { from: accounts[0] });//right here
         }).then(function(success) {
           assert.equal(success, true, "it returns true");
           return tokenInstance.transfer(accounts[1], 500000, { from: accounts[0] });
-        }).then(function(receipt) {//part of transfer test
+        }).then(function(receipt) {//Receipt => metadatas
                 assert.equal(receipt.logs.length, 1, "triggers one event");
                 assert.equal(receipt.logs[0].event, "Transfer", "should be the 'Transfer' event");
                 assert.equal(receipt.logs[0].args._from, accounts[0], "logs the account the tokens are transferred from");
@@ -58,7 +58,7 @@ contract("Token", function(accounts) {
       });
 
 
-      it("approves tokens for delegated transfer", function(){
+      it("approves tokens for delegated transfer", function(){//Approve and allowance test
           return Token.deployed().then(function(i){
               tokenInstance = i;
               return tokenInstance.approve.call(accounts[1], 100);
@@ -74,6 +74,44 @@ contract("Token", function(accounts) {
                 return tokenInstance.allowance(accounts[0], accounts[1]);
           }).then(function(allowance){
               assert.equal(allowance.toNumber(), 100, "stores the allowance for delegated transfer");
+          });
+      });
+
+      it("handles delegated token transfers", function(){
+          return Token.deployed().then(function(i){
+              tokenInstance = i;
+              fromAccount = accounts[2];
+              toAccount = accounts[3];
+              spendingAccount = accounts[4];
+              return tokenInstance.transfer(fromAccount, 100, {from : accounts[0]});
+          }).then(function(receipt){
+              return tokenInstance.approve(spendingAccount, 10, {from : fromAccount});//Approve spendingAccount to spend 10 tokens from fromAccount
+          }).then(function(receipt){
+              return tokenInstance.transferFrom(fromAccount, toAccount, 999, {from : spendingAccount});//Try transferring something larger than sender's balance
+          }).then(assert.fail).catch(function(error){
+              assert(error.message.indexOf("revert") >= 0, "can't transfer value larger than balance");
+              return tokenInstance.transferFrom(fromAccount, toAccount, 20 , {from :spendingAccount})//try transferring something larger than approved amount
+          }).then(assert.fail).catch(function(error){
+              assert(error.message.indexOf("revert") >= 0, "can't transfer value larger than approved amount");
+              return tokenInstance.transferFrom.call(fromAccount, toAccount, 10, {from : spendingAccount});
+          }).then(function(success){
+              assert.equal(success, true, "it returns true");
+              return tokenInstance.transferFrom(fromAccount, toAccount, 10, {from : spendingAccount});
+          }).then(function(receipt){
+            assert.equal(receipt.logs.length, 1, "triggers one event");
+            assert.equal(receipt.logs[0].event, "Transfer", "should be the 'Transfer' event");
+            assert.equal(receipt.logs[0].args._from, fromAccount, "logs the account the tokens are authorized by");
+            assert.equal(receipt.logs[0].args._to, toAccount, "logs the account the tokens are authorized to");
+            assert.equal(receipt.logs[0].args._value, 10, "logs the transfer amount");
+            return tokenInstance.balanceOf(fromAccount);
+          }).then(function(balance){
+              assert.equal(balance.toNumber(), 90, "deducts the amount from the sending account");
+              return tokenInstance.balanceOf(toAccount);
+          }).then(function(balance){
+              assert.equal(balance.toNumber(), 10, "adds the amount from the receiving account");
+              return tokenInstance.allowance(fromAccount, spendingAccount);
+          }).then(function(allowance){
+              assert.equal(allowance.toNumber(), 0, "deducts the amount from the allowance");
           });
       });
 });
