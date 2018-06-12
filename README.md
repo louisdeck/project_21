@@ -1,4 +1,5 @@
 # PROJECT 21
 
-- [ ] implement erc20 token
+- [x] implement erc20 token
+- [ ] implement token sale
 - [ ] register/login system with email confirmation
