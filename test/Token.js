@@ -77,7 +77,7 @@ contract("Token", function(accounts) {
           });
       });
 
-      it("handles delegated token transfers", function(){
+      it("handles delegated token transfers", function(){//transferFrom
           return Token.deployed().then(function(i){
               tokenInstance = i;
               fromAccount = accounts[2];
