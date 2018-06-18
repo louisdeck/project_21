@@ -2,7 +2,7 @@ pragma solidity ^0.4.2;
 
 // doc => https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
 contract Token {
-
+    
     string public name;
     string public symbol;
     uint public decimals; 
@@ -60,8 +60,8 @@ contract Token {
     }
 
     function approve(address _spender, uint256 _value) public returns (bool success) {
-         allowance[msg.sender][_spender] = _value;//allowance => nested mapping
-         Approval(msg.sender, _spender, _value);
-         return true;
+        allowance[msg.sender][_spender] = _value;//allowance => nested mapping
+        Approval(msg.sender, _spender, _value);
+        return true;
     }
 }
