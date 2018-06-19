@@ -56,5 +56,25 @@ contract("Token Sale", function(accounts){
             assert(error.message.indexOf("revert") >= 0, "value must be <= nbTokensAvailable");
         });
     });
+
+
+    it("ends token sale", function(){
+        return Token.deployed().then(function(i){
+            tokenInstance = i;
+            return TokenSale.deployed();
+        }).then(function(i){
+            tokenSaleInstance = i;
+            return tokenSaleInstance.endSale({from : buyer});
+        }).then(assert.fail).catch(function(error){
+            assert(error.message.indexOf("revert") >= 0, "must be admin to end sale");
+            return tokenSaleInstance.endSale({from : admin});
+        }).then(function(receipt){
+            return tokenInstance.balanceOf(admin);
+        }).then(function(balance){
+            assert.equal(balance.toNumber(), 2100000, "returns all unsold tokens to admin");
+            balance = web3.eth.getBalance(tokenSaleInstance.address);
+            assert.equal(balance.toNumber(), 0);
+        });
+    });
 });
 
