@@ -1,0 +1,15 @@
+{
+    "name": "project_21",
+    "author": "arp21",
+    "version": "1.0.0",
+    "description": "project 21",
+    "main": "truffle.js",
+    "directories": {
+        "test": "test"
+    },
+    "homepage": "https://github.com/louisdeck/project_21",
+    "license": "GPL-3.0-only",
+    "devDependencies": {
+        "lite-server": "^2.3.0"
+    }
+}
