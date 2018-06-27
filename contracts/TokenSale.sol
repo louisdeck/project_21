@@ -32,6 +32,7 @@ contract TokenSale {
         nbTokensSold += _nbTokens;
         Sell(msg.sender, _nbTokens);
     }
+    
 
     function endSale() public {
         require(msg.sender == admin);

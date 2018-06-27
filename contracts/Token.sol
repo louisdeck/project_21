@@ -63,5 +63,5 @@ contract Token {
         allowance[msg.sender][_spender] = _value;//allowance => nested mapping
         Approval(msg.sender, _spender, _value);
         return true;
-    }
+    } 
 }
